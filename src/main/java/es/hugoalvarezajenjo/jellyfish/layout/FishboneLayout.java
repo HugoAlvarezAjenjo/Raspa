@@ -19,14 +19,14 @@ import java.util.List;
  */
 public final class FishboneLayout {
     /** Horizontal run per unit of rise on slanted bones (about 60 degrees). */
-    static final double SLOPE = 0.6;
+    private static final double SLOPE = 0.6;
     /** Space between sibling subtrees. */
-    static final double GAP = 14;
+    private static final double GAP = 14;
     /** Space between a bone's end and its label. */
-    static final double LABEL_GAP = 6;
-    static final double BOX_PADDING = 6;
-    static final double MIN_BONE = 30;
-    static final double MARGIN = 20;
+    private static final double LABEL_GAP = 6;
+    private static final double BOX_PADDING = 6;
+    private static final double MIN_BONE = 30;
+    private static final double MARGIN = 20;
 
     private static final Point ORIGIN = new Point(0, 0);
 
@@ -47,8 +47,8 @@ public final class FishboneLayout {
     /** The head sits right of the origin; categories alternate above and below the spine. */
     private Piece spine(final FishboneNode effect) {
         final Size head = labelSize(effect.label(), Role.EFFECT);
-        Piece fish = new Piece(List.of(), List.of(
-                new Label(effect.label(), Role.EFFECT, new Box(0, -head.height() / 2, head.width(), head.height()))));
+        Piece fish = Piece.of(
+                new Label(effect.label(), Role.EFFECT, new Box(0, -head.height() / 2, head.width(), head.height())));
 
         final Packer packer = new Packer(GAP);
         packer.occupy(fish);
@@ -57,7 +57,7 @@ public final class FishboneLayout {
             fish = fish.with(pack(packer, i % 2 == 0 ? bone : bone.mirrorY()));
         }
         final double tail = Math.min(fish.bounds().x(), -MIN_BONE);
-        return fish.with(new Segment(ORIGIN, new Point(tail, 0), Role.EFFECT));
+        return fish.with(Piece.of(new Segment(ORIGIN, new Point(tail, 0), Role.EFFECT)));
     }
 
     /**
@@ -75,7 +75,7 @@ public final class FishboneLayout {
      * along it, the first nearest the attach point; the label sits above the tip.
      */
     private Piece slanted(final FishboneNode node, final int depth) {
-        Piece piece = new Piece(List.of(), List.of());
+        Piece piece = Piece.EMPTY;
         double rise = GAP;
         for (final FishboneNode child : node.children()) {
             final Piece cause = horizontal(child, depth + 1);
@@ -103,8 +103,9 @@ public final class FishboneLayout {
         final List<Piece> causes = node.children().stream().map(c -> slanted(c, depth + 1)).toList();
         final double tallest = causes.stream().mapToDouble(c -> -c.bounds().y()).max().orElse(0);
         final Packer packer = new Packer(GAP);
-        packer.occupy(new Segment(ORIGIN, new Point(-SLOPE * (tallest + GAP), -(tallest + GAP)), Role.forDepth(depth - 1)));
-        Piece piece = new Piece(List.of(), List.of());
+        final Point parentAbove = new Point(-SLOPE * (tallest + GAP), -(tallest + GAP));
+        packer.occupy(Piece.of(new Segment(ORIGIN, parentAbove, Role.forDepth(depth - 1))));
+        Piece piece = Piece.EMPTY;
         for (final Piece cause : causes) {
             piece = piece.with(pack(packer, cause));
         }

@@ -6,57 +6,49 @@ import es.hugoalvarezajenjo.jellyfish.layout.Layout;
 import es.hugoalvarezajenjo.jellyfish.layout.Role;
 import es.hugoalvarezajenjo.jellyfish.layout.Segment;
 
-import java.util.Locale;
+import static es.hugoalvarezajenjo.jellyfish.svg.Xml.empty;
+import static es.hugoalvarezajenjo.jellyfish.svg.Xml.escape;
+import static es.hugoalvarezajenjo.jellyfish.svg.Xml.open;
 
 /** Draws a positioned diagram as a standalone SVG document. */
 public final class SvgRenderer {
     private static final String INK = "#333333";
     private static final String BOX_FILL = "#f4f6f8";
+    private static final String FONTS = String.join(", ", Role.FONT_FAMILIES) + ", sans-serif";
 
     private SvgRenderer() {
     }
 
     public static String render(final Layout layout) {
-        final StringBuilder svg = new StringBuilder()
-                .append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-                .append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"").append(n(layout.width()))
-                .append("\" height=\"").append(n(layout.height()))
-                .append("\" viewBox=\"0 0 ").append(n(layout.width())).append(' ').append(n(layout.height()))
-                .append("\" font-family=\"").append(String.join(", ", Role.FONT_FAMILIES)).append(", sans-serif\">\n")
-                .append("<rect width=\"100%\" height=\"100%\" fill=\"white\"/>\n")
-                .append("<g stroke=\"").append(INK).append("\" stroke-linecap=\"round\">\n");
-        layout.segments().forEach(segment -> line(svg, segment));
+        final double w = layout.width();
+        final double h = layout.height();
+        final StringBuilder svg = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+                .append(open("svg", "xmlns", "http://www.w3.org/2000/svg", "width", w, "height", h,
+                        "viewBox", "0 0 " + Xml.number(w) + " " + Xml.number(h), "font-family", FONTS)).append('\n')
+                .append(empty("rect", "width", "100%", "height", "100%", "fill", "white"))
+                .append(open("g", "stroke", INK, "stroke-linecap", "round")).append('\n');
+        layout.segments().forEach(segment -> svg.append(line(segment)));
         svg.append("</g>\n");
-        layout.labels().forEach(label -> label(svg, label));
+        layout.labels().forEach(label -> svg.append(label(label)));
         return svg.append("</svg>\n").toString();
     }
 
-    private static void line(final StringBuilder svg, final Segment segment) {
-        svg.append("<line x1=\"").append(n(segment.from().x())).append("\" y1=\"").append(n(segment.from().y()))
-                .append("\" x2=\"").append(n(segment.to().x())).append("\" y2=\"").append(n(segment.to().y()))
-                .append("\" stroke-width=\"").append(n(segment.role().strokeWidth())).append("\"/>\n");
+    private static String line(final Segment s) {
+        return empty("line", "x1", s.from().x(), "y1", s.from().y(), "x2", s.to().x(), "y2", s.to().y(),
+                "stroke-width", s.role().strokeWidth());
     }
 
-    private static void label(final StringBuilder svg, final Label label) {
+    private static String label(final Label label) {
         final Box box = label.box();
-        if (label.role().boxed()) {
-            svg.append("<rect x=\"").append(n(box.x())).append("\" y=\"").append(n(box.y()))
-                    .append("\" width=\"").append(n(box.width())).append("\" height=\"").append(n(box.height()))
-                    .append("\" rx=\"4\" fill=\"").append(BOX_FILL).append("\" stroke=\"").append(INK)
-                    .append("\" stroke-width=\"").append(n(label.role().strokeWidth())).append("\"/>\n");
-        }
-        svg.append("<text x=\"").append(n(box.center().x())).append("\" y=\"").append(n(box.center().y()))
-                .append("\" text-anchor=\"middle\" dominant-baseline=\"central\" fill=\"").append(INK)
-                .append("\" font-size=\"").append(n(label.role().fontSize())).append('"')
-                .append(label.role().bold() ? " font-weight=\"bold\"" : "")
-                .append('>').append(escape(label.text())).append("</text>\n");
-    }
-
-    private static String n(final double value) {
-        return String.format(Locale.ROOT, "%.1f", value);
-    }
-
-    static String escape(final String text) {
-        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        final Role role = label.role();
+        final String frame = role.boxed()
+                ? empty("rect", "x", box.x(), "y", box.y(), "width", box.width(), "height", box.height(),
+                "rx", "4", "fill", BOX_FILL, "stroke", INK, "stroke-width", role.strokeWidth())
+                : "";
+        return frame
+                + open("text", "x", box.center().x(), "y", box.center().y(),
+                "text-anchor", "middle", "dominant-baseline", "central", "fill", INK,
+                "font-size", role.fontSize(), "font-weight", role.bold() ? "bold" : null)
+                + escape(label.text()) + "</text>\n";
     }
 }

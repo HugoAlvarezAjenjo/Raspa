@@ -10,10 +10,6 @@ public record Box(double x, double y, double width, double height) {
                 Math.abs(a.x() - b.x()), Math.abs(a.y() - b.y()));
     }
 
-    static Box centeredAt(final Point center, final double width, final double height) {
-        return new Box(center.x() - width / 2, center.y() - height / 2, width, height);
-    }
-
     public double maxX() {
         return x + width;
     }

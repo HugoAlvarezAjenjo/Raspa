@@ -7,6 +7,15 @@ import java.util.stream.Stream;
 
 /** An immutable group of bones and labels in its own local coordinates. */
 record Piece(List<Segment> segments, List<Label> labels) {
+    static final Piece EMPTY = new Piece(List.of(), List.of());
+
+    static Piece of(final Segment segment) {
+        return new Piece(List.of(segment), List.of());
+    }
+
+    static Piece of(final Label label) {
+        return new Piece(List.of(), List.of(label));
+    }
 
     static Piece of(final Segment segment, final Label label) {
         return new Piece(List.of(segment), List.of(label));
@@ -14,10 +23,6 @@ record Piece(List<Segment> segments, List<Label> labels) {
 
     Piece with(final Piece other) {
         return new Piece(concat(segments, other.segments), concat(labels, other.labels));
-    }
-
-    Piece with(final Segment segment) {
-        return new Piece(concat(segments, List.of(segment)), labels);
     }
 
     Piece translate(final double dx, final double dy) {

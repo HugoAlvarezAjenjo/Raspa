@@ -31,10 +31,6 @@ final class Packer {
         forEachBand(piece, gap / 2, (band, minX, maxX) -> leftmost.merge(band, minX, Math::min));
     }
 
-    void occupy(final Segment segment) {
-        forEachBand(segment, gap / 2, (band, minX, maxX) -> leftmost.merge(band, minX, Math::min));
-    }
-
     /**
      * The largest horizontal shift, at most {@code maxDx}, that keeps the piece
      * {@code gap} to the left of everything occupied.
@@ -69,11 +65,11 @@ final class Packer {
         final Point b = segment.to();
         final double minY = Math.min(a.y(), b.y());
         final double maxY = Math.max(a.y(), b.y());
+        if (a.y() == b.y()) {
+            forEachBand(Box.spanning(a, b), margin, consumer);
+            return;
+        }
         for (int band = band(minY - margin); band <= band(maxY + margin); band++) {
-            if (a.y() == b.y()) {
-                consumer.accept(band, Math.min(a.x(), b.x()), Math.max(a.x(), b.x()));
-                continue;
-            }
             final double lo = Math.max(minY, band * BAND - margin);
             final double hi = Math.min(maxY, (band + 1) * BAND + margin);
             final double x1 = xAt(a, b, lo);
