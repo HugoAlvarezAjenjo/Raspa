@@ -23,11 +23,25 @@
     </dependencies>
 
     <build>
+        <!-- No runtime dependencies, so the plain jar is runnable: java -jar target/jellyfish.jar file.jfish -->
+        <finalName>jellyfish</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.3</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>es.hugoalvarezajenjo.jellyfish.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
             </plugin>
         </plugins>
     </build>
