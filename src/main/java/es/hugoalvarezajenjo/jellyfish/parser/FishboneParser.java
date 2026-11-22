@@ -1,53 +1,30 @@
 package es.hugoalvarezajenjo.jellyfish.parser;
 
-import java.util.Arrays;
+import es.hugoalvarezajenjo.jellyfish.model.FishboneNode;
 
-public class FishboneParser {
-    public static FishboneNode parse(final String content) {
-        final String[] contentSplit = splitContent(content);
-        FishboneNode root = null;
-        FishboneNode current = null;
-        int i = 0;
-        for (i = i; i < contentSplit.length && root == null; i++) {
-            if (getDepth(contentSplit[i]) > 0) {
-                return null;
-            } else {
-                root = new FishboneNode(contentSplit[i], null, 0);
-                current = root;
-            }
-        }
-        while (i < contentSplit.length) {
-            if (getDepth(contentSplit[i]) == 0) {
-                return null;
-            } else {
-                if (getDepth(contentSplit[i]) > current.getDepth()) {
-                    if (getDepth(contentSplit[i]) - current.getDepth() > 1) {
-                        return null;
-                    }
-                    FishboneNode child = new FishboneNode(contentSplit[i], current, getDepth(contentSplit[i]));
-                    current.addChild(child);
-                    current = child;
-                    i++;
-                } else {
-                    current = current.getParent();
-                }
-            }
+import java.util.List;
 
-        }
-        return root;
+/**
+ * Entry point of the parser: source text in, one effect node per diagram out.
+ *
+ * <pre>
+ * Blurry photo
+ *   Equipment
+ *     Lens
+ *       Dirty
+ * </pre>
+ *
+ * @see DiagramBlocks for files with several diagrams
+ * @see OutlineParser for the outline rules
+ */
+public final class FishboneParser {
+    private FishboneParser() {
     }
 
-    private static int getDepth(final String line) {
-        int count = 0;
-        for (int i = 0; i < line.length() && line.charAt(i) == '-'; i++) {
-            count++;
-        }
-        return count;
-    }
-
-    private static String[] splitContent(final String content) {
-        return Arrays.stream(content.split("\n"))
-                .filter(line -> !line.trim().isEmpty())
-                .toArray(String[]::new);
+    /** @throws ParseException with the offending line if the source is invalid */
+    public static List<FishboneNode> parse(final String source) {
+        return DiagramBlocks.split(SourceLine.split(source)).stream()
+                .map(OutlineParser::parse)
+                .toList();
     }
 }
