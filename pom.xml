@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>es.hugoalvarezajenjo</groupId>
-    <artifactId>jellyfish</artifactId>
+    <artifactId>raspa</artifactId>
     <version>1.0.0</version>
 
-    <name>Jellyfish</name>
+    <name>Raspa</name>
     <description>Fishbone (Ishikawa) diagrams as code: an indented outline in, SVG out.</description>
-    <url>https://github.com/HugoAlvarezAjenjo/Jellyfish</url>
+    <url>https://github.com/HugoAlvarezAjenjo/Raspa</url>
 
     <licenses>
         <license>
@@ -34,8 +34,8 @@
     </dependencies>
 
     <build>
-        <!-- No runtime dependencies, so the plain jar is runnable: java -jar target/jellyfish.jar file.jfish -->
-        <finalName>jellyfish</finalName>
+        <!-- No runtime dependencies, so the plain jar is runnable: java -jar target/raspa.jar file.raspa -->
+        <finalName>raspa</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -49,7 +49,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>es.hugoalvarezajenjo.jellyfish.Main</mainClass>
+                            <mainClass>es.hugoalvarezajenjo.raspa.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
