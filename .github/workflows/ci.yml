@@ -46,12 +46,15 @@ jobs:
           path: target/surefire-reports
           retention-days: 7
 
-      # Run the jar as a user would: it must render the example, and fail with the
-      # documented exit codes on bad usage (2) and on a syntax error (1).
+      # Run the jar as a user would: it must render the example as SVG and as a dark PNG
+      # (AWT drawing on each OS's fonts), and fail with the documented exit codes on bad
+      # usage (2) and on a syntax error (1).
       - name: Run the jar
         run: |
           java -jar target/raspa.jar docs/example.raspa
           test -s docs/example.svg
+          java -jar target/raspa.jar --png --dark-mode docs/example.raspa
+          test "$(head -c 8 docs/example.png | od -An -tx1 | tr -d ' \n')" = 89504e470d0a1a0a
           set +e
           java -jar target/raspa.jar; usage=$?
           printf 'Effect\n\tTab\n' > bad.raspa

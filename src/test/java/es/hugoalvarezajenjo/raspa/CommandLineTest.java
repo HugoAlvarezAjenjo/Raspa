@@ -1,6 +1,7 @@
 package es.hugoalvarezajenjo.raspa;
 
 import es.hugoalvarezajenjo.raspa.CommandLine.UsageException;
+import es.hugoalvarezajenjo.raspa.render.Format;
 import es.hugoalvarezajenjo.raspa.render.Theme;
 import org.junit.jupiter.api.Test;
 
@@ -12,18 +13,31 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CommandLineTest {
+    private static final Path FILE = Path.of("a.raspa");
 
     @Test
-    void defaultsToTheLightTheme() throws UsageException {
-        assertEquals(new CommandLine(Path.of("a.raspa"), Theme.LIGHT), CommandLine.parse("a.raspa"));
+    void defaultsToALightSvg() throws UsageException {
+        assertEquals(new CommandLine(FILE, Format.SVG, Theme.LIGHT), CommandLine.parse("a.raspa"));
     }
 
     @Test
-    void darkModeInAnyPosition() throws UsageException {
-        final CommandLine expected = new CommandLine(Path.of("a.raspa"), Theme.DARK);
+    void optionsInAnyPosition() throws UsageException {
+        final CommandLine expected = new CommandLine(FILE, Format.PNG, Theme.DARK);
 
-        assertEquals(expected, CommandLine.parse("--dark-mode", "a.raspa"));
-        assertEquals(expected, CommandLine.parse("a.raspa", "--dark-mode"));
+        assertEquals(expected, CommandLine.parse("--png", "--dark-mode", "a.raspa"));
+        assertEquals(expected, CommandLine.parse("a.raspa", "--dark-mode", "--png"));
+        assertEquals(expected, CommandLine.parse("--dark-mode", "a.raspa", "--png"));
+    }
+
+    @Test
+    void svgCanBeAskedForExplicitlyAndRepeated() throws UsageException {
+        assertEquals(Format.SVG, CommandLine.parse("--svg", "a.raspa").format());
+        assertEquals(Format.PNG, CommandLine.parse("--png", "--png", "a.raspa").format());
+    }
+
+    @Test
+    void rejectsTwoFormats() {
+        assertUsageError("choose one of --svg and --png", "--svg", "--png", "a.raspa");
     }
 
     @Test

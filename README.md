@@ -53,7 +53,15 @@ This runs the tests and builds `target/raspa.jar`. Then:
 java -jar target/raspa.jar diagram.raspa
 ```
 
-Writes `diagram.svg` next to the input. From Java, `Raspa.toSvg(source)` returns one SVG per diagram.
+Writes `diagram.svg` next to the input.
+
+| Option | |
+|---|---|
+| `--png` | Write `diagram.png` instead (2x, for sharp screens) |
+| `--dark-mode` | Dark background, as in PlantUML |
+| `-h`, `--help` | Show the options |
+
+From Java: `Raspa.toSvg(source, Theme.DARK)` or `Raspa.toPng(source, Theme.LIGHT)`, one result per diagram.
 
 ## Syntax
 

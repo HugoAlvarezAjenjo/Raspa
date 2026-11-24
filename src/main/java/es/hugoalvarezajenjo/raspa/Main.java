@@ -10,7 +10,10 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
 
-/** {@code raspa diagram.raspa} writes {@code diagram.svg}, or {@code diagram-N.svg} for several diagrams. */
+/**
+ * {@code raspa diagram.raspa} writes {@code diagram.svg}, or {@code diagram-N.svg} for several
+ * diagrams; {@code --png} writes {@code .png} instead. See {@link CommandLine#USAGE}.
+ */
 public class Main {
     static final int OK = 0;
     static final int ERROR = 1;
@@ -37,12 +40,13 @@ public class Main {
         }
         final Path input = command.input();
         try {
-            final List<String> svgs = Raspa.toSvg(Files.readString(input), command.theme());
+            final List<byte[]> files = Raspa.render(Files.readString(input), command.format(), command.theme());
             final String base = input.getFileName().toString().replaceFirst("\\.[^.]*$", "");
-            for (int i = 0; i < svgs.size(); i++) {
-                final String name = svgs.size() == 1 ? base + ".svg" : base + "-" + (i + 1) + ".svg";
+            final String extension = "." + command.format().extension();
+            for (int i = 0; i < files.size(); i++) {
+                final String name = files.size() == 1 ? base + extension : base + "-" + (i + 1) + extension;
                 final Path output = input.resolveSibling(name);
-                Files.writeString(output, svgs.get(i));
+                Files.write(output, files.get(i));
                 out.println(output);
             }
             return OK;

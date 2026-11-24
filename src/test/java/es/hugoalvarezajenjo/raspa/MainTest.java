@@ -3,6 +3,7 @@ package es.hugoalvarezajenjo.raspa;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -11,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MainTest {
@@ -56,6 +58,25 @@ class MainTest {
         assertEquals(Main.OK, run("--help"));
         assertEquals(CommandLine.USAGE + "\n", out());
         assertEquals("", err());
+    }
+
+    @Test
+    void pngWritesAPngNextToTheInput() throws IOException {
+        final Path input = write("photo.raspa", "Effect\n  Category\n");
+
+        assertEquals(Main.OK, run("--png", input.toString()));
+        assertNotNull(ImageIO.read(dir.resolve("photo.png").toFile()), "not a readable PNG");
+        assertTrue(Files.notExists(dir.resolve("photo.svg")));
+        assertEquals(dir.resolve("photo.png") + "\n", out());
+    }
+
+    @Test
+    void pngNumbersTheImagesOfSeveralDiagrams() throws IOException {
+        final Path input = write("many.puml", "@startfishbone\nA\n@endfishbone\n@startfishbone\nB\n@endfishbone\n");
+
+        assertEquals(Main.OK, run("--png", "--dark-mode", input.toString()));
+        assertTrue(Files.exists(dir.resolve("many-1.png")));
+        assertTrue(Files.exists(dir.resolve("many-2.png")));
     }
 
     @Test
