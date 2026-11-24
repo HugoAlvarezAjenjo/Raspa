@@ -10,6 +10,7 @@ import java.util.List;
 /** {@code raspa diagram.raspa} writes {@code diagram.svg}, or {@code diagram-N.svg} for several diagrams. */
 public class Main {
     public static void main(final String[] args) throws IOException {
+        System.setProperty("java.awt.headless", "true");
         if (args.length != 1) {
             System.err.println("Usage: raspa <file>");
             System.exit(2);
