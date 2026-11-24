@@ -46,10 +46,24 @@ class MainTest {
     }
 
     @Test
-    void wrongNumberOfArgumentsPrintsUsage() {
-        assertEquals(Main.USAGE, run());
-        assertEquals(Main.USAGE, run("a", "b"));
-        assertEquals("Usage: raspa <file>\n".repeat(2), err());
+    void badArgumentsSayWhatIsWrongAndPrintUsage() {
+        assertEquals(Main.USAGE, run("--nope", "a.raspa"));
+        assertEquals("raspa: unknown option --nope\n" + CommandLine.USAGE + "\n", err());
+    }
+
+    @Test
+    void helpPrintsUsageAndSucceeds() {
+        assertEquals(Main.OK, run("--help"));
+        assertEquals(CommandLine.USAGE + "\n", out());
+        assertEquals("", err());
+    }
+
+    @Test
+    void darkModeWritesADarkSvg() throws IOException {
+        final Path input = write("dark.raspa", "Effect\n  Category\n");
+
+        assertEquals(Main.OK, run("--dark-mode", input.toString()));
+        assertTrue(Files.readString(dir.resolve("dark.svg")).contains("fill=\"#1b1b1b\""));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package es.hugoalvarezajenjo.raspa;
 
+import es.hugoalvarezajenjo.raspa.CommandLine.UsageException;
 import es.hugoalvarezajenjo.raspa.parser.ParseException;
 
 import java.io.IOException;
@@ -22,13 +23,21 @@ public class Main {
 
     /** Runs the CLI and returns its exit code; prints written files to {@code out}, problems to {@code err}. */
     static int run(final String[] args, final PrintStream out, final PrintStream err) {
-        if (args.length != 1) {
-            err.println("Usage: raspa <file>");
+        if (CommandLine.wantsHelp(args)) {
+            out.println(CommandLine.USAGE);
+            return OK;
+        }
+        final CommandLine command;
+        try {
+            command = CommandLine.parse(args);
+        } catch (final UsageException e) {
+            err.println("raspa: " + e.getMessage());
+            err.println(CommandLine.USAGE);
             return USAGE;
         }
-        final Path input = Path.of(args[0]);
+        final Path input = command.input();
         try {
-            final List<String> svgs = Raspa.toSvg(Files.readString(input));
+            final List<String> svgs = Raspa.toSvg(Files.readString(input), command.theme());
             final String base = input.getFileName().toString().replaceFirst("\\.[^.]*$", "");
             for (int i = 0; i < svgs.size(); i++) {
                 final String name = svgs.size() == 1 ? base + ".svg" : base + "-" + (i + 1) + ".svg";

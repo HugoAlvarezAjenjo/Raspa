@@ -13,6 +13,8 @@ public enum Role {
 
     /** Preferred fonts, in order; the SVG adds the generic sans-serif as a last resort. */
     public static final List<String> FONT_FAMILIES = List.of("Helvetica", "Arial");
+    /** Corner radius of the boxes drawn around boxed labels. */
+    public static final double BOX_CORNER_RADIUS = 4;
 
     private final double fontSize;
     private final boolean bold;

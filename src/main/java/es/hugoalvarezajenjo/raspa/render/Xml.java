@@ -1,10 +1,12 @@
-package es.hugoalvarezajenjo.raspa.svg;
+package es.hugoalvarezajenjo.raspa.render;
 
+import java.awt.Color;
 import java.util.Locale;
 
 /**
  * Writes XML tags from name/value attribute pairs. Numbers get one decimal,
- * strings are escaped, and an attribute whose value is {@code null} is skipped.
+ * colours become {@code #rrggbb}, strings are escaped, and an attribute whose
+ * value is {@code null} is skipped.
  */
 final class Xml {
     private Xml() {
@@ -41,7 +43,16 @@ final class Xml {
         return String.format(Locale.ROOT, "%.1f", value);
     }
 
+    /** {@code #rrggbb}; alpha is not used by any theme. */
+    static String color(final Color color) {
+        return String.format(Locale.ROOT, "#%06x", color.getRGB() & 0xffffff);
+    }
+
     private static String value(final Object value) {
-        return value instanceof Double d ? number(d) : escape(value.toString());
+        return switch (value) {
+            case Double d -> number(d);
+            case Color c -> color(c);
+            default -> escape(value.toString());
+        };
     }
 }
