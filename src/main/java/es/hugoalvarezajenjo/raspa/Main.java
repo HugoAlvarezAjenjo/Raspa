@@ -3,33 +3,49 @@ package es.hugoalvarezajenjo.raspa;
 import es.hugoalvarezajenjo.raspa.parser.ParseException;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
 
 /** {@code raspa diagram.raspa} writes {@code diagram.svg}, or {@code diagram-N.svg} for several diagrams. */
 public class Main {
-    public static void main(final String[] args) throws IOException {
+    static final int OK = 0;
+    static final int ERROR = 1;
+    static final int USAGE = 2;
+
+    public static void main(final String[] args) {
         System.setProperty("java.awt.headless", "true");
+        System.exit(run(args, System.out, System.err));
+    }
+
+    /** Runs the CLI and returns its exit code; prints written files to {@code out}, problems to {@code err}. */
+    static int run(final String[] args, final PrintStream out, final PrintStream err) {
         if (args.length != 1) {
-            System.err.println("Usage: raspa <file>");
-            System.exit(2);
+            err.println("Usage: raspa <file>");
+            return USAGE;
         }
         final Path input = Path.of(args[0]);
-        final List<String> svgs;
         try {
-            svgs = Raspa.toSvg(Files.readString(input));
+            final List<String> svgs = Raspa.toSvg(Files.readString(input));
+            final String base = input.getFileName().toString().replaceFirst("\\.[^.]*$", "");
+            for (int i = 0; i < svgs.size(); i++) {
+                final String name = svgs.size() == 1 ? base + ".svg" : base + "-" + (i + 1) + ".svg";
+                final Path output = input.resolveSibling(name);
+                Files.writeString(output, svgs.get(i));
+                out.println(output);
+            }
+            return OK;
         } catch (final ParseException e) {
-            System.err.println(input + ": " + e.getMessage());
-            System.exit(1);
-            return;
-        }
-        final String base = input.getFileName().toString().replaceFirst("\\.[^.]*$", "");
-        for (int i = 0; i < svgs.size(); i++) {
-            final String name = svgs.size() == 1 ? base + ".svg" : base + "-" + (i + 1) + ".svg";
-            final Path output = input.resolveSibling(name);
-            Files.writeString(output, svgs.get(i));
-            System.out.println(output);
+            err.println(input + ": " + e.getMessage());
+            return ERROR;
+        } catch (final NoSuchFileException e) {
+            err.println(input + ": file not found");
+            return ERROR;
+        } catch (final IOException e) {
+            err.println(input + ": " + e.getMessage());
+            return ERROR;
         }
     }
 }
