@@ -141,10 +141,25 @@ class FishboneParserTest {
         }
 
         @Test
-        void markerPrefixAloneIsNotAMarker() {
-            final FishboneNode effect = parseOne("Effect\n  @startfishbonex\n");
+        void labelsMayStartWithAtWhenTheyAreNotMarkers() {
+            final FishboneNode effect = parseOne("Effect\n  @home\n  @ the office\n");
 
-            assertEquals("Effect\n  @startfishbonex\n", outline(effect));
+            assertEquals("Effect\n  @home\n  @ the office\n", outline(effect));
+        }
+
+        /** Any PlantUML marker means a .puml file: only fishbone blocks are diagrams. */
+        @Test
+        void otherPlantUmlMarkersSwitchToBlockMode() {
+            final List<FishboneNode> diagrams = FishboneParser.parse("""
+                    @startmindmap
+                    * Root
+                    @endmindmap
+                    @startfishbone
+                    Effect
+                    @endfishbone
+                    """);
+
+            assertEquals(List.of("Effect\n"), diagrams.stream().map(FishboneParserTest::outline).toList());
         }
     }
 
@@ -188,6 +203,11 @@ class FishboneParserTest {
         @Test
         void nestedStartMarker() {
             assertError(3, "inside the diagram opened at line 1", "@startfishbone\nEffect\n@startfishbone\n");
+        }
+
+        @Test
+        void plantUmlFileWithoutFishboneBlocks() {
+            assertError(2, "no @startfishbone block", "\n@startuml\nAlice -> Bob\n@enduml\n");
         }
 
         @Test
